@@ -1,0 +1,379 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Nunito', sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.app-container {
+    width: 100%;
+    max-width: 500px;
+    background: white;
+    border-radius: 25px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header Styles */
+.app-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo i {
+    font-size: 24px;
+}
+
+.logo h1 {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.counter {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* Card Container */
+.card-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.card {
+    position: absolute;
+    width: 100%;
+    height: 400px;
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    cursor: grab;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    user-select: none;
+}
+
+.card:active {
+    cursor: grabbing;
+}
+
+.card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.card-placeholder {
+    text-align: center;
+    color: #999;
+    padding: 40px;
+}
+
+.card-placeholder i {
+    font-size: 60px;
+    color: #ddd;
+    margin-bottom: 20px;
+}
+
+.card-placeholder p {
+    font-size: 18px;
+}
+
+/* Loading Indicator */
+.loading {
+    text-align: center;
+    padding: 20px;
+    color: #667eea;
+    display: none;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Instructions */
+.instructions {
+    display: flex;
+    justify-content: space-around;
+    margin: 20px 0;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 15px;
+}
+
+.swipe-instruction {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+}
+
+.swipe-instruction.left i {
+    color: #ff6b6b;
+    font-size: 20px;
+}
+
+.swipe-instruction.right i {
+    color: #51cf66;
+    font-size: 20px;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    padding: 20px 0;
+}
+
+.btn {
+    padding: 15px 30px;
+    border: none;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+.btn:active {
+    transform: scale(0.95);
+}
+
+.dislike-btn {
+    background: #ff6b6b;
+    color: white;
+}
+
+.like-btn {
+    background: #51cf66;
+    color: white;
+}
+
+.btn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+/* Results Screen */
+.results-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: white;
+    padding: 30px;
+    overflow-y: auto;
+    z-index: 100;
+}
+
+.hidden {
+    display: none;
+}
+
+.results-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.results-header h2 {
+    color: #667eea;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.stats {
+    display: flex;
+    justify-content: space-around;
+    margin: 30px 0;
+}
+
+.stat-box {
+    text-align: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 15px;
+    min-width: 100px;
+}
+
+.stat-box h3 {
+    font-size: 32px;
+    color: #667eea;
+    margin-bottom: 5px;
+}
+
+.liked-cats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.liked-cat-card {
+    position: relative;
+    border-radius: 15px;
+    overflow: hidden;
+    height: 150px;
+}
+
+.liked-cat-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.heart-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 5px 10px;
+    border-radius: 20px;
+    color: #ff6b6b;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.results-actions {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.play-again-btn {
+    background: #667eea;
+    color: white;
+}
+
+.share-btn {
+    background: #f8f9fa;
+    color: #333;
+}
+
+/* Swipe Feedback */
+.swipe-right {
+    transform: translateX(200px) rotate(20deg);
+    opacity: 0;
+}
+
+.swipe-left {
+    transform: translateX(-200px) rotate(-20deg);
+    opacity: 0;
+}
+
+.heart-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 100px;
+    color: #51cf66;
+    opacity: 0;
+    z-index: 10;
+}
+
+.cross-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 100px;
+    color: #ff6b6b;
+    opacity: 0;
+    z-index: 10;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 480px) {
+    .app-container {
+        height: 95vh;
+        max-width: 100%;
+        border-radius: 20px;
+    }
+    
+    .card {
+        height: 350px;
+    }
+    
+    .action-buttons {
+        gap: 20px;
+    }
+    
+    .btn {
+        padding: 12px 25px;
+        font-size: 14px;
+    }
+    
+    .liked-cats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stat-box {
+        min-width: 80px;
+        padding: 10px;
+    }
+    
+    .stat-box h3 {
+        font-size: 24px;
+    }
+}
