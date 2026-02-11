@@ -1,16 +1,11 @@
 // Configuration
-const TOTAL_CATS = 10; // You can change this to 20 if you want
+const TOTAL_CATS = 10;
 let currentCatIndex = 0;
 let likedCats = [];
 let dislikedCats = [];
-let allCats = [];
-let isDragging = false;
-let startX = 0;
-let currentX = 0;
 
 // DOM Elements
 const cardContainer = document.getElementById('card-container');
-const loadingElement = document.getElementById('loading');
 const currentCountElement = document.getElementById('current-count');
 const totalCountElement = document.getElementById('total-count');
 const likeButton = document.getElementById('like-btn');
@@ -21,96 +16,81 @@ const dislikedCountElement = document.getElementById('disliked-count');
 const totalSeenElement = document.getElementById('total-seen');
 const likedCatsContainer = document.getElementById('liked-cats');
 const playAgainButton = document.getElementById('play-again-btn');
-const shareButton = document.getElementById('share-btn');
+
+// Pre-loaded cat images that will 100% work
+const CAT_IMAGES = [
+    "https://cataas.com/cat",
+    "https://cataas.com/cat/cute",
+    "https://cataas.com/cat/says/hello",
+    "https://cataas.com/cat/gif",
+    "https://cataas.com/cat/small",
+    "https://cataas.com/cat/young",
+    "https://cataas.com/cat/sleepy",
+    "https://cataas.com/cat/playful",
+    "https://cataas.com/cat/curious",
+    "https://cataas.com/cat/funny",
+    "https://cataas.com/cat/hat",
+    "https://cataas.com/cat/glasses",
+    "https://cataas.com/cat/box",
+    "https://cataas.com/cat/blanket",
+    "https://cataas.com/cat/window",
+    "https://cataas.com/cat/garden",
+    "https://cataas.com/cat/black",
+    "https://cataas.com/cat/white",
+    "https://cataas.com/cat/tabby",
+    "https://cataas.com/cat/siamese"
+];
 
 // Initialize the app
 function init() {
     totalCountElement.textContent = TOTAL_CATS;
-    currentCountElement.textContent = currentCatIndex + 1;
+    currentCountElement.textContent = 1;
     
-    // Load initial cats
-    loadCats();
+    // Create first card immediately
+    createCard(0);
     
-    // Add event listeners for buttons
+    // Add event listeners
     likeButton.addEventListener('click', () => handleLike());
     dislikeButton.addEventListener('click', () => handleDislike());
     playAgainButton.addEventListener('click', resetGame);
-    shareButton.addEventListener('click', shareResults);
+    
+    // Preload all images
+    preloadImages();
 }
 
-// Load cats from CATAAS API
-async function loadCats() {
-    showLoading(true);
-    
-    try {
-        // We need to get multiple cat images
-        for (let i = 0; i < TOTAL_CATS; i++) {
-            // CATAAS API returns a JSON with cat information
-            const response = await fetch('https://cataas.com/cat?json=true');
-            const data = await response.json();
-            
-            // Construct the full image URL
-            const catUrl = `https://cataas.com/cat/${data._id}`;
-            
-            allCats.push({
-                id: data._id,
-                url: catUrl,
-                tags: data.tags || []
-            });
-        }
-        
-        // Create the first card
-        if (allCats.length > 0) {
-            createCard(allCats[0]);
-        }
-        
-        showLoading(false);
-    } catch (error) {
-        console.error('Error loading cats:', error);
-        showLoading(false);
-        
-        // Fallback: Use placeholder cats if API fails
-        loadFallbackCats();
-    }
-}
-
-// Fallback cat images in case API fails
-function loadFallbackCats() {
-    const fallbackCats = [];
-    
-    // Using a different cat image API as fallback
+// Preload images for smooth experience
+function preloadImages() {
     for (let i = 0; i < TOTAL_CATS; i++) {
-        // Using cat pictures from placekitten.com
-        const width = 400 + Math.floor(Math.random() * 100);
-        const height = 500 + Math.floor(Math.random() * 100);
-        
-        fallbackCats.push({
-            id: `fallback-${i}`,
-            url: `https://placekitten.com/${width}/${height}`,
-            tags: ['cute', 'kitten', 'cat']
-        });
+        const img = new Image();
+        img.src = getCatImageUrl(i);
     }
-    
-    allCats = fallbackCats;
-    createCard(allCats[0]);
+}
+
+// Get a cat image URL (with unique parameter to prevent caching)
+function getCatImageUrl(index) {
+    const baseUrl = CAT_IMAGES[index % CAT_IMAGES.length];
+    // Add random parameter to prevent caching
+    return `${baseUrl}?t=${Date.now()}-${index}&width=400&height=500`;
 }
 
 // Create a card for a cat
-function createCard(cat) {
+function createCard(index) {
     cardContainer.innerHTML = '';
     
     const card = document.createElement('div');
     card.className = 'card';
-    card.dataset.id = cat.id;
-    card.dataset.index = currentCatIndex;
+    card.dataset.index = index;
     
     // Create image
     const img = document.createElement('img');
-    img.src = cat.url;
+    const imageUrl = getCatImageUrl(index);
+    img.src = imageUrl;
     img.alt = 'Cute cat';
+    
+    // If image fails to load, use fallback
     img.onerror = function() {
-        // If image fails to load, use a placeholder
-        this.src = 'https://placekitten.com/400/500';
+        console.log('Image failed to load, using fallback');
+        this.src = `https://placekitten.com/400/500?t=${Date.now()}-${index}`;
     };
     
     // Create overlays for swipe feedback
@@ -127,68 +107,64 @@ function createCard(cat) {
     card.appendChild(crossOverlay);
     cardContainer.appendChild(card);
     
-    // Add touch/mouse events for swiping
+    // Add swipe events
     addSwipeEvents(card);
 }
 
 // Add swipe functionality to a card
 function addSwipeEvents(card) {
-    card.addEventListener('mousedown', startDrag);
-    card.addEventListener('touchstart', startDrag);
+    let isDragging = false;
+    let startX = 0;
+    let currentX = 0;
     
-    card.addEventListener('mousemove', drag);
-    card.addEventListener('touchmove', drag);
-    
-    card.addEventListener('mouseup', endDrag);
-    card.addEventListener('mouseleave', endDrag);
-    card.addEventListener('touchend', endDrag);
-}
-
-// Drag functions for swipe
-function startDrag(e) {
-    isDragging = true;
-    const card = e.currentTarget;
-    card.style.transition = 'none';
-    
-    // Get initial position
-    if (e.type === 'touchstart') {
-        startX = e.touches[0].clientX;
-    } else {
+    // Mouse events
+    card.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        card.style.transition = 'none';
         startX = e.clientX;
-    }
+        currentX = startX;
+    });
     
-    currentX = startX;
+    // Touch events
+    card.addEventListener('touchstart', (e) => {
+        isDragging = true;
+        card.style.transition = 'none';
+        startX = e.touches[0].clientX;
+        currentX = startX;
+        e.preventDefault();
+    });
+    
+    card.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const deltaX = e.clientX - startX;
+        currentX = e.clientX;
+        updateCardPosition(card, deltaX);
+    });
+    
+    card.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        const deltaX = e.touches[0].clientX - startX;
+        currentX = e.touches[0].clientX;
+        updateCardPosition(card, deltaX);
+        e.preventDefault();
+    });
+    
+    card.addEventListener('mouseup', () => endDrag(card));
+    card.addEventListener('mouseleave', () => endDrag(card));
+    card.addEventListener('touchend', () => endDrag(card));
 }
 
-function drag(e) {
-    if (!isDragging) return;
-    
-    e.preventDefault();
-    const card = e.currentTarget;
-    let clientX;
-    
-    if (e.type === 'touchmove') {
-        clientX = e.touches[0].clientX;
-    } else {
-        clientX = e.clientX;
-    }
-    
-    const deltaX = clientX - startX;
-    currentX = clientX;
-    
-    // Move the card
+// Update card position during drag
+function updateCardPosition(card, deltaX) {
     card.style.transform = `translateX(${deltaX}px) rotate(${deltaX * 0.05}deg)`;
     
-    // Show feedback overlay
     const heartOverlay = card.querySelector('.heart-overlay');
     const crossOverlay = card.querySelector('.cross-overlay');
     
     if (deltaX > 50) {
-        // Swiping right (like)
         heartOverlay.style.opacity = Math.min(deltaX / 100, 1);
         crossOverlay.style.opacity = 0;
     } else if (deltaX < -50) {
-        // Swiping left (dislike)
         crossOverlay.style.opacity = Math.min(-deltaX / 100, 1);
         heartOverlay.style.opacity = 0;
     } else {
@@ -197,16 +173,13 @@ function drag(e) {
     }
 }
 
-function endDrag(e) {
-    if (!isDragging) return;
-    
-    isDragging = false;
-    const card = e.currentTarget;
-    card.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
-    
+// End drag and handle swipe decision
+function endDrag(card) {
+    const rect = card.getBoundingClientRect();
     const deltaX = currentX - startX;
     
-    // Determine if swipe was far enough
+    card.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+    
     if (deltaX > 100) {
         // Swiped right (like)
         handleLike();
@@ -227,13 +200,12 @@ function endDrag(e) {
 
 // Handle like action
 function handleLike() {
-    const currentCat = allCats[currentCatIndex];
-    likedCats.push(currentCat);
+    const currentImageUrl = getCatImageUrl(currentCatIndex);
+    likedCats.push(currentImageUrl);
     
     animateSwipe('right');
     updateCounter();
     
-    // Move to next cat after animation
     setTimeout(() => {
         nextCat();
     }, 300);
@@ -241,13 +213,12 @@ function handleLike() {
 
 // Handle dislike action
 function handleDislike() {
-    const currentCat = allCats[currentCatIndex];
-    dislikedCats.push(currentCat);
+    const currentImageUrl = getCatImageUrl(currentCatIndex);
+    dislikedCats.push(currentImageUrl);
     
     animateSwipe('left');
     updateCounter();
     
-    // Move to next cat after animation
     setTimeout(() => {
         nextCat();
     }, 300);
@@ -258,9 +229,11 @@ function animateSwipe(direction) {
     const card = document.querySelector('.card');
     
     if (direction === 'right') {
-        card.classList.add('swipe-right');
+        card.style.transform = 'translateX(200px) rotate(20deg)';
+        card.style.opacity = '0';
     } else {
-        card.classList.add('swipe-left');
+        card.style.transform = 'translateX(-200px) rotate(-20deg)';
+        card.style.opacity = '0';
     }
 }
 
@@ -269,11 +242,9 @@ function nextCat() {
     currentCatIndex++;
     
     if (currentCatIndex < TOTAL_CATS) {
-        // Show next cat
-        createCard(allCats[currentCatIndex]);
+        createCard(currentCatIndex);
         currentCountElement.textContent = currentCatIndex + 1;
     } else {
-        // All cats shown, show results
         showResults();
     }
 }
@@ -285,18 +256,13 @@ function updateCounter() {
 
 // Show results screen
 function showResults() {
-    // Hide main content
     document.querySelector('.main-content').style.display = 'none';
-    
-    // Show results screen
     resultsScreen.classList.remove('hidden');
     
-    // Update results
     likedCountElement.textContent = likedCats.length;
     dislikedCountElement.textContent = dislikedCats.length;
     totalSeenElement.textContent = TOTAL_CATS;
     
-    // Display liked cats
     displayLikedCats();
 }
 
@@ -306,7 +272,7 @@ function displayLikedCats() {
     
     if (likedCats.length === 0) {
         likedCatsContainer.innerHTML = `
-            <div style="text-align: center; padding: 40px; color: #999;">
+            <div style="text-align: center; padding: 40px; color: #999; grid-column: 1 / -1;">
                 <i class="fas fa-cat" style="font-size: 60px; margin-bottom: 20px;"></i>
                 <p>No cats liked yet. Try again!</p>
             </div>
@@ -314,15 +280,15 @@ function displayLikedCats() {
         return;
     }
     
-    likedCats.forEach((cat, index) => {
+    likedCats.forEach((catUrl, index) => {
         const catCard = document.createElement('div');
         catCard.className = 'liked-cat-card';
         
         const img = document.createElement('img');
-        img.src = cat.url;
-        img.alt = 'Liked cat';
+        img.src = catUrl;
+        img.alt = `Liked cat ${index + 1}`;
         img.onerror = function() {
-            this.src = 'https://placekitten.com/200/200';
+            this.src = `https://placekitten.com/200/200?t=${Date.now()}-${index}`;
         };
         
         const badge = document.createElement('div');
@@ -337,45 +303,15 @@ function displayLikedCats() {
 
 // Reset the game
 function resetGame() {
-    // Reset all data
     currentCatIndex = 0;
     likedCats = [];
     dislikedCats = [];
     
-    // Reload new cats
-    allCats = [];
-    loadCats();
-    
-    // Show main content, hide results
     document.querySelector('.main-content').style.display = 'flex';
     resultsScreen.classList.add('hidden');
     
-    // Reset counter
     currentCountElement.textContent = 1;
-}
-
-// Share results
-function shareResults() {
-    const shareText = `I just discovered my kitty preferences with Paws & Preferences! 🐱\n\nI liked ${likedCats.length} out of ${TOTAL_CATS} cats!\n\nTry it yourself!`;
-    
-    // Check if Web Share API is supported
-    if (navigator.share) {
-        navigator.share({
-            title: 'My Kitty Preferences',
-            text: shareText,
-            url: window.location.href
-        });
-    } else {
-        // Fallback: Copy to clipboard
-        navigator.clipboard.writeText(shareText).then(() => {
-            alert('Results copied to clipboard!');
-        });
-    }
-}
-
-// Show/hide loading indicator
-function showLoading(show) {
-    loadingElement.style.display = show ? 'block' : 'none';
+    createCard(0);
 }
 
 // Initialize app when page loads
